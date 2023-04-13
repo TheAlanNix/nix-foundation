@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nix-foundation-www
+spec:
+  replicas: 1
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: nix-foundation-www
+  template:
+    metadata:
+      labels:
+        app: nix-foundation-www
+    spec:
+      containers:
+      - image: alannix/nix-foundation:latest
+        name: nix-foundation-www
+        ports:
+        - containerPort: 8080
