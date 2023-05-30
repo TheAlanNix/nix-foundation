@@ -10,7 +10,7 @@ jobs:
   Build-Scan-Push:
     runs-on: ubuntu-latest
     env:
-      IMAGE_REPO: alannix/nix-foundation
+      IMAGE_REPO: ${{ secrets.DOCKER_USERNAME }}/nix-foundation
       IMAGE_TAG: latest
       WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
       WIZ_CLIENT_SECRET: ${{ secrets.WIZ_CLIENT_SECRET }}
