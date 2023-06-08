@@ -14,7 +14,7 @@ jobs:
       IMAGE_TAG: latest
       WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
       WIZ_CLIENT_SECRET: ${{ secrets.WIZ_CLIENT_SECRET }}
-      WIZ_POLICY: "nixlab-vuln"
+      WIZ_POLICY: "Default vulnerabilities policy"
     steps:
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
