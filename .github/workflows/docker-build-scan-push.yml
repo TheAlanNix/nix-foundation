@@ -27,11 +27,11 @@ jobs:
         run: curl -o wizcli https://wizcli.app.wiz.io/latest/wizcli && chmod +x wizcli
 
       - name: Authenticate to Wiz
-        run: ./wizcli auth --id "$WIZ_CLIENT_ID" --secret "$WIZ_CLIENT_SECRET"
+        run: sudo ./wizcli auth --id "$WIZ_CLIENT_ID" --secret "$WIZ_CLIENT_SECRET"
 
       - name: Run Wiz CLI image scan
         id: scan
-        run: ./wizcli docker scan -S -i ${IMAGE_REPO}:${IMAGE_TAG} --policy "$WIZ_POLICY" --tag github_action_run_id=${{ github.run_id }}  --driver mountWithLayers
+        run: sudo ./wizcli docker scan -S -i ${IMAGE_REPO}:${IMAGE_TAG} --policy "$WIZ_POLICY" --tag github_action_run_id=${{ github.run_id }}  --driver mountWithLayers
         continue-on-error: true
 
       - name: Login to DockerHub
