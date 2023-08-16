@@ -16,7 +16,6 @@ jobs:
       WIZ_CLIENT_SECRET: ${{ secrets.WIZ_CLIENT_SECRET }}
       WIZ_POLICY: "Default vulnerabilities policy"
     steps:
-
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout
         uses: actions/checkout@v2
@@ -32,7 +31,7 @@ jobs:
 
       - name: Run Wiz CLI image scan
         id: scan
-        run: ./wizcli docker scan -S -i ${IMAGE_REPO}:${IMAGE_TAG} --policy "$WIZ_POLICY" --tag github_action_run_id=${{ github.run_id }}
+        run: ./wizcli docker scan -S -i ${IMAGE_REPO}:${IMAGE_TAG} --policy "$WIZ_POLICY" --tag github_action_run_id=${{ github.run_id }}  --driver mountWithLayers
         continue-on-error: true
 
       - name: Login to DockerHub
