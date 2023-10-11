@@ -42,3 +42,6 @@ jobs:
 
       - name: Push the latest Docker image
         run: docker push ${IMAGE_REPO}:${IMAGE_TAG}
+      
+      - name: Run Wiz CLI image tag
+        run: sudo ./wizcli docker tag -S -i ${IMAGE_REPO}:${IMAGE_TAG}
