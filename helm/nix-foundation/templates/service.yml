@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "nix-foundation.name" . }}-www
+spec:
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: {{ include "nix-foundation.name" . }}-www
+  type: LoadBalancer
