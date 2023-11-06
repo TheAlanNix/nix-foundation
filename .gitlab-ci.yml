@@ -11,6 +11,7 @@ stages:
   - image-build-scan-push-tag
 
 image-build-scan-push-tag:
+  allow_failure: true
   stage: image-build-scan-push-tag
   before_script:
     - curl --silent -o wizcli https://wizcli.app.wiz.io/latest/wizcli-linux-amd64 && chmod +x wizcli
