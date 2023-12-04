@@ -5,19 +5,41 @@ services:
 
 variables:
   CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
-  WIZ_POLICY: "nixlab-vuln-audit"
+  WIZ_IAC_POLICY: "nixlab-iac-audit"
+  WIZ_SECRETS_POLICY: "nixlab-secrets"
+  WIZ_VULN_POLICY: "nixlab-vuln-audit"
+
+default:
+  before_script:
+    - echo $FASTLY_API_KEY > /tmp/yv_fastly_api_key
+    - curl --silent -o wizcli https://wizcli.app.wiz.io/latest/wizcli-linux-amd64 && chmod +x wizcli
+    - ./wizcli auth --id "$WIZ_CLIENT_ID" --secret "$WIZ_CLIENT_SECRET"
 
 stages:
+  - security
   - image-build-scan-push-tag
+
+security-iac:
+  stage: security
+  variables:
+    SCAN_PATH: "."
+    POLICY: "Default IaC policy"
+  script:
+    - ./wizcli iac scan --path "$SCAN_PATH" -p "$WIZ_IAC_POLICY" -p "$WIZ_SECRETS_POLICY"
+
+security-dir:
+  stage: security
+  variables:
+    SCAN_PATH: "."
+    POLICY: "Default secrets policy"
+  script:
+    - ./wizcli dir scan --path "$SCAN_PATH" -p "$WIZ_VULN_POLICY" -p "$WIZ_SECRETS_POLICY"
 
 image-build-scan-push-tag:
   stage: image-build-scan-push-tag
-  before_script:
-    - curl --silent -o wizcli https://wizcli.app.wiz.io/latest/wizcli-linux-amd64 && chmod +x wizcli
-    - ./wizcli auth --id "$WIZ_CLIENT_ID" --secret "$WIZ_CLIENT_SECRET"
   script:
     - docker build . --tag $CONTAINER_RELEASE_IMAGE
-    - ./wizcli docker scan --image $CONTAINER_RELEASE_IMAGE --policy "$WIZ_POLICY" --output wiz-output.json,sarif,true
+    - ./wizcli docker scan --image $CONTAINER_RELEASE_IMAGE -p "$WIZ_VULN_POLICY" -p "$WIZ_SECRETS_POLICY" --output wiz-output.json,sarif,true
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker push $CONTAINER_RELEASE_IMAGE
     - ./wizcli docker tag -S -i $CONTAINER_RELEASE_IMAGE

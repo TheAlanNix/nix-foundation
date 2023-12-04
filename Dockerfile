@@ -10,11 +10,15 @@ WORKDIR /app
 # copy both 'package.json' and 'package-lock.json' (if available)
 COPY package*.json ./
 
+# copy both 'babel.config.js'
+COPY babel.config.js ./
+
 # install project dependencies
 RUN npm install
 
 # copy project files and folders to the current working directory (i.e. 'app' folder)
-COPY . .
+COPY ./public ./public
+COPY ./src ./src
 
 # build app for production with minification
 RUN npm run build
