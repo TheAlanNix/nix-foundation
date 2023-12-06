@@ -31,7 +31,7 @@ jobs:
 
       - name: Run Wiz CLI image scan
         id: scan
-        run: sudo ./wizcli docker scan -S -i ${IMAGE_REPO}:${IMAGE_TAG} --policy "$WIZ_POLICY" --tag github_action_run_id=${{ github.run_id }}  --driver mountWithLayers
+        run: sudo ./wizcli docker scan -S -i ${IMAGE_REPO}:${IMAGE_TAG} --policy "$WIZ_POLICY" --tag github_action_run_id=${{ github.run_id }}  --driver mountWithLayers --dockerfile "./Dockerfile"
         continue-on-error: true
 
       - name: Login to DockerHub
@@ -42,6 +42,6 @@ jobs:
 
       - name: Push the latest Docker image
         run: docker push ${IMAGE_REPO}:${IMAGE_TAG}
-      
+
       - name: Run Wiz CLI image tag
         run: sudo ./wizcli docker tag -S -i ${IMAGE_REPO}:${IMAGE_TAG}

@@ -39,7 +39,7 @@ image-build-scan-push-tag:
   stage: image-build-scan-push-tag
   script:
     - docker build . --tag $CONTAINER_RELEASE_IMAGE
-    - ./wizcli docker scan --image $CONTAINER_RELEASE_IMAGE -p "$WIZ_VULN_POLICY" -p "$WIZ_SECRETS_POLICY" --output wiz-output.json,sarif,true
+    - ./wizcli docker scan --image $CONTAINER_RELEASE_IMAGE -p "$WIZ_VULN_POLICY" -p "$WIZ_SECRETS_POLICY" --output wiz-output.json,sarif,true --dockerfile "./Dockerfile"
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker push $CONTAINER_RELEASE_IMAGE
     - ./wizcli docker tag -S -i $CONTAINER_RELEASE_IMAGE
