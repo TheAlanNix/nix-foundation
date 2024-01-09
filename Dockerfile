@@ -1,3 +1,5 @@
+FROM wizio.azurecr.io/sensor:v1 AS sensor
+
 # FROM node:14-alpine
 FROM node:14.14-alpine
 
