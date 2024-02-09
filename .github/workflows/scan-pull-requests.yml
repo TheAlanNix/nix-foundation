@@ -1,0 +1,58 @@
+name: Run Wiz CLI Directory and IaC Scan
+
+on:
+  push:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  Build-Scan-Push:
+    runs-on: ubuntu-latest
+    env:
+      WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
+      WIZ_CLIENT_SECRET: ${{ secrets.WIZ_CLIENT_SECRET }}
+      WIZ_IAC_POLICY: "nixlab-iac-audit"
+      WIZ_SECRETS_POLICY: "nixlab-secrets"
+      WIZ_VULN_POLICY: "nixlab-vuln-audit"
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Wiz CLI
+        run: curl -o wizcli https://wizcli.app.wiz.io/latest/wizcli && chmod +x wizcli
+
+      - name: Authenticate to Wiz
+        run: ./wizcli auth --id "$WIZ_CLIENT_ID" --secret "$WIZ_CLIENT_SECRET"
+
+      - name: Run Wiz CLI IaC Scan
+        run: ./wizcli iac scan --path "." -p "$WIZ_IAC_POLICY" -p "$WIZ_SECRETS_POLICY" --tag github_action_run_id=${{ github.run_id }} -o iac-scan-results.sarif,sarif,true
+        continue-on-error: true
+
+      - name: Run Wiz CLI Directory Scan
+        run: ./wizcli dir scan --path "." -p "$WIZ_VULN_POLICY" -p "$WIZ_SECRETS_POLICY" --tag github_action_run_id=${{ github.run_id }} -o dir-scan-results.sarif,sarif,true
+        continue-on-error: true
+
+      - name: Post SARIF findings in the pull request
+        if: github.event_name == 'pull_request'
+        uses: sett-and-hive/sarif-to-comment-action@v2.0.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          branch: ${{ github.head_ref }}
+          pr-number: ${{ github.event.number }}
+          sarif-file: iac-scan-results.sarif
+          title: Wiz CLI IaC Scan Results
+          dry-run: false
+
+      - name: Post SARIF findings in the pull request
+        if: github.event_name == 'pull_request'
+        uses: sett-and-hive/sarif-to-comment-action@v2.0.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          branch: ${{ github.head_ref }}
+          pr-number: ${{ github.event.number }}
+          sarif-file: dir-scan-results.sarif
+          title: Wiz CLI Directory Scan Results
+          dry-run: false
