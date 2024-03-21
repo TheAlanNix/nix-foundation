@@ -9,6 +9,8 @@ on:
 jobs:
   Build-Scan-Push:
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write
     env:
       IMAGE_REPO: ${{ secrets.DOCKER_USERNAME }}/nix-foundation
       IMAGE_TAG: latest
@@ -31,8 +33,14 @@ jobs:
 
       - name: Run Wiz CLI image scan
         id: scan
-        run: sudo ./wizcli docker scan -S -i ${IMAGE_REPO}:${IMAGE_TAG} --policy "$WIZ_POLICY" --tag github_action_run_id=${{ github.run_id }}  --driver mountWithLayers --dockerfile "./Dockerfile"
+        run: sudo ./wizcli docker scan -i ${IMAGE_REPO}:${IMAGE_TAG} --policy "$WIZ_POLICY" --tag github_action_run_id=${{ github.run_id }}  --driver mountWithLayers --dockerfile "./Dockerfile" --output wiz-output.json,sarif,true
         continue-on-error: true
+
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: wiz-output.json
+          category: wiz
 
       - name: Login to DockerHub
         uses: docker/login-action@v3
@@ -44,4 +52,4 @@ jobs:
         run: docker push ${IMAGE_REPO}:${IMAGE_TAG}
 
       - name: Run Wiz CLI image tag
-        run: sudo ./wizcli docker tag -S -i ${IMAGE_REPO}:${IMAGE_TAG}
+        run: sudo ./wizcli docker tag -i ${IMAGE_REPO}:${IMAGE_TAG}
