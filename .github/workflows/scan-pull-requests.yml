@@ -16,9 +16,9 @@ jobs:
     env:
       WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
       WIZ_CLIENT_SECRET: ${{ secrets.WIZ_CLIENT_SECRET }}
-      WIZ_IAC_POLICY: "nixlab-iac-audit"
-      WIZ_SECRETS_POLICY: "nixlab-secrets-audit"
-      WIZ_VULN_POLICY: "nixlab-vuln-audit"
+      WIZ_IAC_POLICY: "jmo-iac-audit"
+      WIZ_SECRETS_POLICY: "jmo-secrets-audit"
+      WIZ_VULN_POLICY: "jmo-vuln-audit"
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
