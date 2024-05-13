@@ -26,14 +26,17 @@ jobs:
         run: docker build -t ${IMAGE_REPO}:${IMAGE_TAG} .
 
       - name: Download Wiz CLI
-        run: curl -o wizcli https://wizcli.app.wiz.io/latest/wizcli && chmod +x wizcli
+        run: |-
+          docker pull wiziocli.azurecr.io/wizcli:latest-amd64
+          docker tag wiziocli.azurecr.io/wizcli:latest-amd64 wizcli:latest
 
       - name: Authenticate to Wiz
-        run: sudo ./wizcli auth --id "$WIZ_CLIENT_ID" --secret "$WIZ_CLIENT_SECRET"
+        run: docker run --rm -v $(pwd):/cli wizcli:latest auth --id "$WIZ_CLIENT_ID" --secret "$WIZ_CLIENT_SECRET"
 
       - name: Run Wiz CLI image scan
         id: scan
-        run: sudo ./wizcli docker scan -i ${IMAGE_REPO}:${IMAGE_TAG} --policy "$WIZ_POLICY" --tag github_action_run_id=${{ github.run_id }}  --driver mountWithLayers --dockerfile "./Dockerfile" --output wiz-output.json,sarif,true
+        run: docker run --rm --security-opt apparmor:unconfined --cap-add SYS_ADMIN -v /var/lib/docker:/var/lib/docker -v $(pwd):/cli/ -v /var/run/docker.sock:/var/run/docker.sock wizcli:latest docker scan -i ${IMAGE_REPO}:${IMAGE_TAG} --policy "$WIZ_POLICY" --tag github_action_run_id=${{ github.run_id }} --policy-hits-only --driver mountWithLayers --dockerfile "./Dockerfile" --output wiz-output.json,sarif,true
+
         continue-on-error: true
 
       - name: Upload SARIF file
@@ -52,4 +55,4 @@ jobs:
         run: docker push ${IMAGE_REPO}:${IMAGE_TAG}
 
       - name: Run Wiz CLI image tag
-        run: sudo ./wizcli docker tag -i ${IMAGE_REPO}:${IMAGE_TAG}
+        run: docker run --rm -v $(pwd):/cli/ -v /var/run/docker.sock:/var/run/docker.sock wizcli:latest docker tag -i ${IMAGE_REPO}:${IMAGE_TAG}

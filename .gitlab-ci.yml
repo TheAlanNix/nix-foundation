@@ -1,19 +1,23 @@
-image: gitlab/dind
+image: docker:24.0.5
 
 services:
-  - name: docker:dind
+  - name: docker:24.0.5-dind
 
 variables:
   CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
+  DOCKER_HOST: tcp://docker:2376
+  DOCKER_TLS_CERTDIR: "/certs"
   WIZ_IAC_POLICY: "nixlab-iac-audit"
   WIZ_SECRETS_POLICY: "nixlab-secrets"
   WIZ_VULN_POLICY: "nixlab-vuln-audit"
 
 default:
   before_script:
-    - echo $FASTLY_API_KEY > /tmp/yv_fastly_api_key
-    - curl --silent -o wizcli https://wizcli.app.wiz.io/latest/wizcli-linux-amd64 && chmod +x wizcli
-    - ./wizcli auth --id "$WIZ_CLIENT_ID" --secret "$WIZ_CLIENT_SECRET"
+    - docker pull wiziocli.azurecr.io/wizcli:latest-amd64
+    - docker tag wiziocli.azurecr.io/wizcli:latest-amd64 wizcli:latest
+    - docker run --rm -v $(pwd):/cli wizcli:latest auth --id "$WIZ_CLIENT_ID" --secret "$WIZ_CLIENT_SECRET"
+    # - curl --silent -o wizcli https://wizcli.app.wiz.io/latest/wizcli-linux-amd64 && chmod +x wizcli
+    # - ./wizcli auth --id "$WIZ_CLIENT_ID" --secret "$WIZ_CLIENT_SECRET"
 
 stages:
   - security
@@ -25,7 +29,7 @@ security-iac:
     SCAN_PATH: "."
     POLICY: "Default IaC policy"
   script:
-    - ./wizcli iac scan --path "$SCAN_PATH" -p "$WIZ_IAC_POLICY" -p "$WIZ_SECRETS_POLICY"
+    - docker run --rm -v $(pwd):/cli/ wizcli:latest iac scan --path "$SCAN_PATH" -p "$WIZ_IAC_POLICY" -p "$WIZ_SECRETS_POLICY"
 
 security-dir:
   stage: security
@@ -33,16 +37,16 @@ security-dir:
     SCAN_PATH: "."
     POLICY: "Default secrets policy"
   script:
-    - ./wizcli dir scan --path "$SCAN_PATH" -p "$WIZ_VULN_POLICY" -p "$WIZ_SECRETS_POLICY"
+    - docker run --rm -v $(pwd):/cli/ wizcli:latest dir scan --path "$SCAN_PATH" -p "$WIZ_VULN_POLICY" -p "$WIZ_SECRETS_POLICY"
 
 image-build-scan-push-tag:
   stage: image-build-scan-push-tag
   script:
     - docker build . --tag $CONTAINER_RELEASE_IMAGE
-    - ./wizcli docker scan --image $CONTAINER_RELEASE_IMAGE -p "$WIZ_VULN_POLICY" -p "$WIZ_SECRETS_POLICY" --output wiz-output.json,sarif,true --dockerfile "./Dockerfile"
+    - docker run --rm --security-opt apparmor:unconfined --cap-add SYS_ADMIN -v /var/lib/docker:/var/lib/docker -v $(pwd):/cli/ -v /var/run/docker.sock:/var/run/docker.sock wizcli:latest docker scan --image $CONTAINER_RELEASE_IMAGE -p "$WIZ_VULN_POLICY" -p "$WIZ_SECRETS_POLICY" --policy-hits-only --driver mountWithLayers --dockerfile "./Dockerfile" --output wiz-output.json,sarif,true
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker push $CONTAINER_RELEASE_IMAGE
-    - ./wizcli docker tag -S -i $CONTAINER_RELEASE_IMAGE
+    - docker run --rm -v $(pwd):/cli/ -v /var/run/docker.sock:/var/run/docker.sock wizcli:latest docker tag -S -i $CONTAINER_RELEASE_IMAGE
   artifacts:
     paths:
       - wiz-output.json

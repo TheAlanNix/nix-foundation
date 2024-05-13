@@ -26,13 +26,15 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download Wiz CLI
-        run: curl -o wizcli https://wizcli.app.wiz.io/latest/wizcli && chmod +x wizcli
+        run: |-
+          docker pull wiziocli.azurecr.io/wizcli:latest-amd64
+          docker tag wiziocli.azurecr.io/wizcli:latest-amd64 wizcli:latest
 
       - name: Authenticate to Wiz
-        run: ./wizcli auth --id "$WIZ_CLIENT_ID" --secret "$WIZ_CLIENT_SECRET"
+        run: docker run --rm -v $(pwd):/cli wizcli:latest auth --id "$WIZ_CLIENT_ID" --secret "$WIZ_CLIENT_SECRET"
 
       - name: Run Wiz CLI IaC Scan
-        run: ./wizcli iac scan --path "." -p "$WIZ_IAC_POLICY" -p "$WIZ_SECRETS_POLICY" --tag github_action_run_id=${{ github.run_id }} -o iac-scan-results.sarif,sarif,true
+        run: docker run --rm -v $(pwd):/cli/ wizcli:latest iac scan --path "." -p "$WIZ_IAC_POLICY" -p "$WIZ_SECRETS_POLICY" --tag github_action_run_id=${{ github.run_id }} -o iac-scan-results.sarif,sarif,true
 
       - name: Run Wiz CLI Directory Scan
-        run: ./wizcli dir scan --path "." -p "$WIZ_VULN_POLICY" -p "$WIZ_SECRETS_POLICY" --tag github_action_run_id=${{ github.run_id }} -o dir-scan-results.sarif,sarif,true
+        run: docker run --rm -v $(pwd):/cli/ wizcli:latest dir scan --path "." -p "$WIZ_VULN_POLICY" -p "$WIZ_SECRETS_POLICY" --tag github_action_run_id=${{ github.run_id }} -o dir-scan-results.sarif,sarif,true
