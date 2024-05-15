@@ -36,5 +36,17 @@ jobs:
       - name: Run Wiz CLI IaC Scan
         run: docker run --rm -v $(pwd):/cli/ wizcli:latest iac scan --path "." -p "$WIZ_IAC_POLICY" -p "$WIZ_SECRETS_POLICY" --tag github_action_run_id=${{ github.run_id }} -o iac-scan-results.sarif,sarif,true
 
+      - name: Upload SARIF file IaC
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: iac-scan-results.sarif
+          category: wiz-iac
+
       - name: Run Wiz CLI Directory Scan
         run: docker run --rm -v $(pwd):/cli/ wizcli:latest dir scan --path "." -p "$WIZ_VULN_POLICY" -p "$WIZ_SECRETS_POLICY" --tag github_action_run_id=${{ github.run_id }} -o dir-scan-results.sarif,sarif,true
+
+      - name: Upload SARIF file Dir
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: dir-scan-results.sarif
+          category: wiz-dir
