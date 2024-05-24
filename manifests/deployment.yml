@@ -14,7 +14,7 @@ spec:
         app: nix-foundation-www
     spec:
       containers:
-      - image: alannix/nix-foundation:latest
+      - image: wizmacdonald/nix-foundation:latest
         name: nix-foundation-www
         ports:
         - containerPort: 8080
