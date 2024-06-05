@@ -30,15 +30,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download Wiz CLI
-        run: |-
-          docker pull wiziocli.azurecr.io/wizcli:latest-amd64
-          docker tag wiziocli.azurecr.io/wizcli:latest-amd64 wizcli:latest
+        run: curl -o wizcli https://wizcli.app.wiz.io/latest/wizcli && chmod +x wizcli
 
       - name: Authenticate to Wiz
-        run: docker run --rm -v $(pwd):/cli wizcli:latest auth --id "$WIZ_CLIENT_ID" --secret "$WIZ_CLIENT_SECRET"
+        run: ./wizcli auth --id "$WIZ_CLIENT_ID" --secret "$WIZ_CLIENT_SECRET"
 
       - name: Run Wiz CLI IaC Scan
-        run: docker run --rm -v $(pwd):/cli/ wizcli:latest iac scan --path "." -p "$WIZ_IAC_POLICY" -p "$WIZ_SECRETS_POLICY" --tag github_action_run_id=${{ github.run_id }} -o iac-scan-results.sarif,sarif,true
+        run: ./wizcli iac scan --path "." -p "$WIZ_IAC_POLICY" -p "$WIZ_SECRETS_POLICY" --tag github_action_run_id=${{ github.run_id }} -o iac-scan-results.sarif,sarif,true
 
       - name: Upload SARIF file IaC
         uses: github/codeql-action/upload-sarif@v3
@@ -47,7 +45,7 @@ jobs:
           category: wiz-iac
 
       - name: Run Wiz CLI Directory Scan
-        run: docker run --rm -v $(pwd):/cli/ wizcli:latest dir scan --path "." -p "$WIZ_VULN_POLICY" -p "$WIZ_SECRETS_POLICY" --tag github_action_run_id=${{ github.run_id }} -o dir-scan-results.sarif,sarif,true
+        run: ./wizcli dir scan --path "." -p "$WIZ_VULN_POLICY" -p "$WIZ_SECRETS_POLICY" --tag github_action_run_id=${{ github.run_id }} -o dir-scan-results.sarif,sarif,true
 
       - name: Upload SARIF file Dir
         uses: github/codeql-action/upload-sarif@v3
