@@ -43,10 +43,10 @@ image-build-scan-push-tag:
   stage: image-build-scan-push-tag
   script:
     - docker build . --tag $CONTAINER_RELEASE_IMAGE
-    - docker run --rm --security-opt apparmor:unconfined --cap-add SYS_ADMIN -v /var/lib/docker:/var/lib/docker -v $(pwd):/cli/ -v /var/run/docker.sock:/var/run/docker.sock wizcli:latest docker scan --image $CONTAINER_RELEASE_IMAGE -p "$WIZ_VULN_POLICY" -p "$WIZ_SECRETS_POLICY" --policy-hits-only --driver mountWithLayers --dockerfile "./Dockerfile" --output wiz-output.json,sarif,true
+    - docker run --rm --security-opt apparmor:unconfined --cap-add SYS_ADMIN -e GITLAB_CI -e CI_COMMIT_BRANCH -e GITLAB_USER_LOGIN -e CI_REPOSITORY_URL -e CI_COMMIT_SHA -v /var/lib/docker:/var/lib/docker -v $(pwd):/cli/ -v /var/run/docker.sock:/var/run/docker.sock wizcli:latest docker scan --image $CONTAINER_RELEASE_IMAGE -p "$WIZ_VULN_POLICY" -p "$WIZ_SECRETS_POLICY" --policy-hits-only --driver mountWithLayers --dockerfile "./Dockerfile" --output wiz-output.json,sarif,true
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker push $CONTAINER_RELEASE_IMAGE
-    - docker run --rm -e CI_COMMIT_BRANCH -e GITLAB_USER_LOGIN -e CI_REPOSITORY_URL -e CI_COMMIT_SHA -v $(pwd):/cli/ -v /var/run/docker.sock:/var/run/docker.sock wizcli:latest docker tag -S -i $CONTAINER_RELEASE_IMAGE
+    - docker run --rm -e GITLAB_CI -e CI_COMMIT_BRANCH -e GITLAB_USER_LOGIN -e CI_REPOSITORY_URL -e CI_COMMIT_SHA -v $(pwd):/cli/ -v /var/run/docker.sock:/var/run/docker.sock wizcli:latest docker tag -S -i $CONTAINER_RELEASE_IMAGE
   artifacts:
     paths:
       - wiz-output.json
