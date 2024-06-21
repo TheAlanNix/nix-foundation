@@ -1,0 +1,52 @@
+# Node.js with Vue
+# Build a Node.js project that uses Vue.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+
+trigger:
+  - main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  - group: "Wiz Credentials"
+  - name: image_repo
+    value: nix-foundation
+  - name: image_tag
+    value: ado
+
+steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: "14.x"
+    displayName: "Install Node.js"
+
+  - script: |
+      npm install
+      npm run build
+    displayName: "npm install and build"
+
+  - task: wiz@0
+    inputs:
+      command: "dir"
+      clientid: "$(WIZ_CLIENT_ID)"
+      secret: "$(WIZ_CLIENT_SECRET)"
+      path: "."
+      policyHitsOnly: true
+      sensitiveData: true
+      succeedOnFailures: true
+
+  - script: |
+      docker build -t $(image_repo):$(image_tag) .
+    displayName: "Build the Docker Image"
+
+  - task: wiz@0
+    inputs:
+      command: "image"
+      clientid: "$(WIZ_CLIENT_ID)"
+      secret: "$(WIZ_CLIENT_SECRET)"
+      image: "$(image_repo):$(image_tag)"
+      policyHitsOnly: true
+      sensitiveData: true
+      succeedOnFailures: true
