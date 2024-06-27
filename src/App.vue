@@ -1,15 +1,15 @@
 <template>
-  <img id="portrait" alt="Portrait" src="./assets/portrait.jpg" />
-  <NixFoundation msg="Welcome to the Lynn Nix Foundation" />
+  <img id="logo" alt="TimaTech Logo" src="./assets/timatech_logo.png" />
+  <TimaTech msg="Welcome to Timatech Industries" />
 </template>
 
 <script>
-import NixFoundation from "./components/NixFoundation.vue";
+import TimaTech from "./components/TimaTech.vue";
 
 export default {
   name: "App",
   components: {
-    NixFoundation,
+    TimaTech,
   },
 };
 </script>
@@ -24,7 +24,7 @@ export default {
   margin-top: 60px;
 }
 
-#portrait {
+#logo {
   border-radius: 25px;
   filter: drop-shadow(0 0 0.2rem gray);
 }
