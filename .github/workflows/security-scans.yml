@@ -45,7 +45,7 @@ jobs:
           category: wiz-iac
 
       - name: Run Wiz CLI Directory Scan
-        run: ./wizcli dir scan --path "." -p "$WIZ_VULN_POLICY" -p "$WIZ_SECRETS_POLICY" --tag github_action_run_id=${{ github.run_id }} -o dir-scan-results.sarif,sarif,true
+        run: ./wizcli dir scan --path "." --tag github_action_run_id=${{ github.run_id }} -o dir-scan-results.sarif,sarif,true
 
       - name: Upload SARIF file Dir
         uses: github/codeql-action/upload-sarif@v3
