@@ -55,3 +55,6 @@ jobs:
 
       - name: Run Wiz CLI image tag
         run: sudo -E ./wizcli docker tag -i ${IMAGE_REPO}:${IMAGE_TAG}
+
+      - name: echo
+        run: echo "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"
