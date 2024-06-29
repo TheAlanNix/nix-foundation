@@ -1,6 +1,6 @@
 <template>
   <img id="portrait" alt="Portrait" src="./assets/portrait.jpg" />
-  <NixFoundation msg="Welcome to the Dick Umile Foundation" />
+  <NixFoundation msg="Welcome to the Gary Roberts Foundation" />
 </template>
 
 <script>
