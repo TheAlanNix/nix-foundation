@@ -1,6 +1,6 @@
 <template>
   <img id="portrait" alt="Portrait" src="./assets/portrait.jpg" />
-  <NixFoundation msg="Welcome to the Gary Roberts Foundation" />
+  <NixFoundation msg="Welcome to the Mac Book Foundation" />
 </template>
 
 <script>
