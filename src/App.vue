@@ -1,6 +1,6 @@
 <template>
   <img id="portrait" alt="Portrait" src="./assets/portrait.jpg" />
-  <NixFoundation msg="Welcome to the Justin Test Foundation" />
+  <NixFoundation msg="Welcome to the Justin Quinn Foundation" />
 </template>
 
 <script>
