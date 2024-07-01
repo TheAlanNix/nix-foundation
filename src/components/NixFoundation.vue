@@ -2,7 +2,7 @@
   <div class="hello">
     <h1>{{ msg }}</h1>
     <p>
-      Mighty Quinn Music has the best tunes in town!<br />
+      The Mighty Quinn Music has the best tunes in town!<br />
       Come on in to buy the latest and greatest records
     </p>
     <h3>Essential Links</h3>
