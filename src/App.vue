@@ -1,6 +1,6 @@
 <template>
   <img id="portrait" alt="Portrait" src="./assets/portrait.jpg" />
-  <NixFoundation msg="Welcome to the Bruce Lee Foundation" />
+  <NixFoundation msg="Welcome to Mighty Quinn Music" />
 </template>
 
 <script>

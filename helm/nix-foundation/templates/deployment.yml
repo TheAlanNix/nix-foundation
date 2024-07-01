@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "nix-foundation.name" . }}-www
+  name: {{ include "mighty-quinn.name" . }}-www
 spec:
   replicas: {{ .Values.replicaCount }}
   revisionHistoryLimit: 0
   selector:
     matchLabels:
-      app: {{ include "nix-foundation.name" . }}-www
+      app: {{ include "mighty-quinn.name" . }}-www
   template:
     metadata:
       labels:
-        app: {{ include "nix-foundation.name" . }}-www
+        app: {{ include "mighty-quinn.name" . }}-www
     spec:
       containers:
       - image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        name: {{ include "nix-foundation.name" . }}-www
+        name: {{ include "mighty-quinn.name" . }}-www
         ports:
         - containerPort: 8080

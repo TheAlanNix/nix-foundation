@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nix-foundation-www
+  name: mighty-quinn-www
 spec:
   replicas: 1
   revisionHistoryLimit: 0
   selector:
     matchLabels:
-      app: nix-foundation-www
+      app: mighty-quinn-www
   template:
     metadata:
       labels:
-        app: nix-foundation-www
+        app: mighty-quinn-www
     spec:
       containers:
       - image: justinquinn21/nix-foundation:latest
-        name: nix-foundation-www
+        name: mighty-quinn-www
         ports:
         - containerPort: 8080
