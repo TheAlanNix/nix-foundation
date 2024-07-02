@@ -1,6 +1,6 @@
 apiVersion: v2
-name: nix-foundation
-description: A Helm chart for deploying the nix-foundation website
+name: mighty-quinn
+description: A Helm chart for deploying the mighty-quinn website
 
 # A chart can be either an 'application' or a 'library' chart.
 #

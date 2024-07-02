@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: alannix/nix-foundation
+  repository: justinquinn21/nix-foundation:latest
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: latest
