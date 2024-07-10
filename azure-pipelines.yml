@@ -33,7 +33,7 @@ steps:
       clientid: "$(WIZ_CLIENT_ID)"
       secret: "$(WIZ_CLIENT_SECRET)"
       path: "."
-      policyHitsOnly: true
+      policyHitsOnly: false
       sensitiveData: true
       succeedOnFailures: true
 
@@ -47,6 +47,6 @@ steps:
       clientid: "$(WIZ_CLIENT_ID)"
       secret: "$(WIZ_CLIENT_SECRET)"
       image: "$(image_repo):$(image_tag)"
-      policyHitsOnly: true
+      policyHitsOnly: false
       sensitiveData: true
       succeedOnFailures: true
