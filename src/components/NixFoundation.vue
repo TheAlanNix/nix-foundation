@@ -2,7 +2,7 @@
   <div class="hello">
     <h1>{{ msg }}</h1>
     <p>
-      Honoring the lifelong goal of Carolyn "Lynn" Nix in which every one of us
+      Honoring the lifelong goal of Carolyn NOT Nix in which every one of us
       can read and write,<br />
       and there is free access to education for all.
     </p>
