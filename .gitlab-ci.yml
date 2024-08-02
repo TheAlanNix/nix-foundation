@@ -8,7 +8,7 @@ variables:
   DOCKER_HOST: tcp://docker:2376
   DOCKER_TLS_CERTDIR: "/certs"
   WIZ_IAC_POLICY: "nixlab-iac-audit"
-  WIZ_SECRETS_POLICY: "nixlab-secrets"
+  WIZ_SECRETS_POLICY: "nixlab-secrets-audit"
   WIZ_VULN_POLICY: "nixlab-vuln-audit"
 
 default:

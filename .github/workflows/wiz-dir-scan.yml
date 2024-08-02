@@ -1,0 +1,39 @@
+name: Wiz CLI Directory Scan
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  Wiz-Directory-Scan:
+    runs-on: ubuntu-latest
+    env:
+      WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
+      WIZ_CLIENT_SECRET: ${{ secrets.WIZ_CLIENT_SECRET }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Wiz CLI
+        run: curl -o wizcli https://wizcli.app.wiz.io/latest/wizcli && chmod +x wizcli
+
+      - name: Authenticate to Wiz
+        run: ./wizcli auth
+
+      - name: Run Wiz CLI Directory Scan
+        run: ./wizcli dir scan --path "." -p "${{ vars.WIZ_VULN_POLICY }}" -p "${{ vars.WIZ_SECRETS_POLICY }}" --tag github_action_run_id=${{ github.run_id }} -o wiz-output.json,sarif,true
+
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: wiz-output.json
+          category: wiz-dir

@@ -16,7 +16,6 @@ jobs:
       IMAGE_TAG: latest
       WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
       WIZ_CLIENT_SECRET: ${{ secrets.WIZ_CLIENT_SECRET }}
-      WIZ_POLICY: "Default vulnerabilities policy"
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout
@@ -29,13 +28,13 @@ jobs:
         run: curl -o wizcli https://wizcli.app.wiz.io/latest/wizcli && chmod +x wizcli
 
       - name: Authenticate to Wiz
-        run: sudo -E ./wizcli auth --id "$WIZ_CLIENT_ID" --secret "$WIZ_CLIENT_SECRET"
+        run: sudo -E ./wizcli auth
 
       - name: Run Wiz CLI image scan
         id: scan
         run: |-
-          sudo -E ./wizcli docker scan -i ${IMAGE_REPO}:${IMAGE_TAG} --policy "$WIZ_POLICY" --policy-hits-only \
-          --driver mountWithLayers --dockerfile "./Dockerfile" --output wiz-output.json,sarif,true --tag github_action_run_id=${{ github.run_id }}
+          sudo -E ./wizcli docker scan -i ${IMAGE_REPO}:${IMAGE_TAG} --policy-hits-only --driver mountWithLayers \
+          --dockerfile "./Dockerfile" --output wiz-output.json,sarif,true --tag github_action_run_id=${{ github.run_id }}
         continue-on-error: true
 
       - name: Upload SARIF file
