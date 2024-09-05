@@ -34,7 +34,8 @@ jobs:
         id: scan
         run: |-
           sudo -E ./wizcli docker scan -i ${IMAGE_REPO}:${IMAGE_TAG} --policy-hits-only --driver mountWithLayers \
-          --dockerfile "./Dockerfile" --output wiz-output.json,sarif,true --tag github_action_run_id=${{ github.run_id }}
+          --dockerfile "./Dockerfile" --output wiz-output.json,sarif,true --tag github_action_run_id=${{ github.run_id }} \
+          --sbom-format spdx-json --sbom-output-file sbom.json
         continue-on-error: true
 
       - name: Upload SARIF file

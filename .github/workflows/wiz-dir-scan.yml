@@ -30,7 +30,10 @@ jobs:
         run: ./wizcli auth
 
       - name: Run Wiz CLI Directory Scan
-        run: ./wizcli dir scan --path "." -p "${{ vars.WIZ_VULN_POLICY }}" -p "${{ vars.WIZ_SECRETS_POLICY }}" --tag github_action_run_id=${{ github.run_id }} -o wiz-output.json,sarif,true
+        run: |-
+          ./wizcli dir scan --path "." -p "${{ vars.WIZ_VULN_POLICY }}" -p "${{ vars.WIZ_SECRETS_POLICY }}" \
+          --tag github_action_run_id=${{ github.run_id }} -o wiz-output.json,sarif,true \
+          --sbom-format spdx-json --sbom-output-file sbom.json
 
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v3
