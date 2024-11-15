@@ -9,7 +9,7 @@ variables:
   DOCKER_TLS_CERTDIR: "/certs"
   WIZ_IAC_POLICY: "nixlab-iac-audit"
   WIZ_SECRETS_POLICY: "nixlab-secrets-audit"
-  WIZ_VULN_POLICY: "nixlab-vuln-audit"
+  WIZ_VULN_POLICY: "nixlab-vuln-high-audit"
 
 default:
   before_script:
