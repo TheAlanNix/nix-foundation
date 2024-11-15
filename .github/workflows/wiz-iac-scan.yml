@@ -29,4 +29,6 @@ jobs:
         run: ./wizcli auth
 
       - name: Run Wiz CLI IaC Scan
-        run: ./wizcli iac scan --path "." -p "${{ vars.WIZ_IAC_POLICY }}" -p "${{ vars.WIZ_SECRETS_POLICY }}" --tag github_action_run_id=${{ github.run_id }}
+        run: |-
+          ./wizcli iac scan --path "." -p "${{ vars.WIZ_IAC_POLICY }}" -p "${{ vars.WIZ_SECRETS_POLICY }}" \
+          --policy-hits-only --tag github_action_run_id=${{ github.run_id }}
