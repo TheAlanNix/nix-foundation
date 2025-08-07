@@ -1,9 +1,17 @@
 name: Docker Build/Scan/Push
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
+    paths:
+      - "src/**"
+      - Dockerfile
+
+permissions:
+  id-token: write
+  contents: read
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -12,8 +20,7 @@ jobs:
     permissions:
       security-events: write
     env:
-      IMAGE_REPO: ${{ secrets.DOCKER_USERNAME }}/nix-foundation
-      IMAGE_TAG: latest
+      IMAGE: ${{ vars.IMAGE_REGISTRY }}/${{ vars.IMAGE_NAME }}
       WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
       WIZ_CLIENT_SECRET: ${{ secrets.WIZ_CLIENT_SECRET }}
     steps:
@@ -21,21 +28,46 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build the latest Docker image
-        run: docker build -t ${IMAGE_REPO}:${IMAGE_TAG} .
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Download Wiz CLI
-        run: curl -o wizcli https://wizcli.app.wiz.io/latest/wizcli && chmod +x wizcli
+      - name: Collect Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable={{is_default_branch}}
 
-      - name: Authenticate to Wiz
-        run: sudo -E ./wizcli auth
+      - name: Get First Docker Tag
+        id: first-tag
+        run: |
+          echo "tag=${{ fromJSON(steps.meta.outputs.json).tags[0] }}" >> $GITHUB_OUTPUT
 
-      - name: Run Wiz CLI image scan
-        id: scan
-        run: |-
-          sudo -E ./wizcli docker scan -i ${IMAGE_REPO}:${IMAGE_TAG} --policy-hits-only --driver mountWithLayers \
-          --dockerfile "./Dockerfile" --output wiz-output.json,sarif,true --tag github_action_run_id=${{ github.run_id }} \
-          --sbom-format spdx-json --sbom-output-file sbom.json
+      - name: Build Docker Image
+        id: build-image
+        uses: docker/build-push-action@v6
+        with:
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          load: true
+          platforms: linux/amd64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Scan Container with Wiz
+        run: |
+          if [[ ! -z "${{ vars.WIZ_ENV }}" && "${{ vars.WIZ_ENV }}" != "app" ]]; then export WIZ_ENV=${{ vars.WIZ_ENV }}; fi
+          curl -Lo wizcli https://wizcli.app.wiz.io/latest/wizcli-linux-amd64
+          chmod +x wizcli
+          sudo -E ./wizcli auth
+          sudo -E ./wizcli docker scan --image "${{ steps.first-tag.outputs.tag }}" --policy-hits-only --driver mountWithLayers \
+            --dockerfile "./Dockerfile" --output wiz-output.json,sarif,true --tag github_action_run_id=${{ github.run_id }} \
+            --sbom-format spdx-json --sbom-output-file sbom.json
         continue-on-error: true
 
       - name: Upload SARIF file
@@ -44,14 +76,34 @@ jobs:
           sarif_file: wiz-output.json
           category: wiz
 
-      - name: Login to DockerHub
+      - name: Log in to Image Registry
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
+          registry: ${{ vars.IMAGE_REGISTRY }}
+          username: ${{ secrets.IMAGE_REGISTRY_USERNAME }}
+          password: ${{ secrets.IMAGE_REGISTRY_PASSWORD }}
 
-      - name: Push the latest Docker image
-        run: docker push ${IMAGE_REPO}:${IMAGE_TAG}
+      - name: Push Docker Image
+        id: push-image
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        uses: docker/build-push-action@v6
+        with:
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
-      - name: Run Wiz CLI image tag
-        run: sudo -E ./wizcli docker tag -i ${IMAGE_REPO}:${IMAGE_TAG}
+      - name: Pull Image for Wiz Tagging
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        run: |
+          docker pull ${{ steps.first-tag.outputs.tag }}
+
+      - name: Tag Container with Wiz
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        run: |
+          if [[ ! -z "${{ vars.WIZ_ENV }}" && "${{ vars.WIZ_ENV }}" != "app" ]]; then export WIZ_ENV=${{ vars.WIZ_ENV }}; fi
+          sudo -E ./wizcli docker tag --image "${{ steps.first-tag.outputs.tag }}"
+        continue-on-error: true
