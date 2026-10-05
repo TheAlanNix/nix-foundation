@@ -1,0 +1,23 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Top-level dependency that transitively includes com.fasterxml.jackson.core:jackson-core:2.22.1
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.22.1'
+}
+
+// Optional: Force jackson-core to 2.22.1 across ALL transitive trees,
+// even if another library requests a different version of jackson-core.
+configurations.all {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        if (details.requested.group == 'com.fasterxml.jackson.core' && details.requested.name == 'jackson-core') {
+            details.useVersion '2.22.1'
+            details.because 'Testing dependency vulnerability scanner on jackson-core 2.22.1'
+        }
+    }
+}s
